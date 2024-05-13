@@ -1,3 +1,5 @@
+https://tech-blog-o-71d8f52a7b6b.herokuapp.com/
+
 # 14 Model-View-Controller (MVC): Tech Blog
 
 ## Your Task
