@@ -5,9 +5,11 @@ const exphbs = require("express-handlebars");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DATABASE_URL = 'https://git.heroku.com/tech-blog-o.git';
 
 const sequelize = require("./config/connection.js");
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
+const sequelize = new Sequelize(process.env.DATABASE_URL);
 
 const sess = {
   secret: "Super secret secret",
@@ -42,3 +44,12 @@ app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}!`);
   sequelize.sync({ force: false });
 });
+
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
