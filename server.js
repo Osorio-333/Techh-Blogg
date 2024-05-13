@@ -7,9 +7,11 @@ const { Sequelize } = require('sequelize'); // Require Sequelize here
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const sequelize = process.env.DATABASE_URL ?
-                  new Sequelize(process.env.DATABASE_URL) :
-                  require("./config/connection.js");
+// Sequelize initialization with provided configuration
+const sequelize = new Sequelize('database', 'username', 'password', {
+  host: 'localhost',
+  dialect: 'mysql'
+});
 
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
