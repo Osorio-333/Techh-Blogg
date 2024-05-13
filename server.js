@@ -2,11 +2,14 @@ const path = require("path");
 const express = require("express");
 const session = require("express-session");
 const exphbs = require("express-handlebars");
-
 const { Sequelize } = require('sequelize'); // Require Sequelize here
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const sequelize = process.env.DATABASE_URL ?
+                  new Sequelize(process.env.DATABASE_URL) :
+                  require("./config/connection.js");
 
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
@@ -36,11 +39,6 @@ app.set("view engine", "handlebars");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-
-// Use sequelize variable consistently
-const sequelize = process.env.DATABASE_URL ? 
-                  new Sequelize(process.env.DATABASE_URL) :
-                  require("./config/connection.js");
 
 app.use(require('./controllers/'));
 
