@@ -5,20 +5,36 @@ const exphbs = require("express-handlebars");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATABASE_URL = 'https://git.heroku.com/tech-blog-o.git';
 
-const sequelize = require("./config/connection.js");
+// Import sequelize and initialize the connection
+const { Sequelize } = require('sequelize');
+let sequelize;
+
+if (process.env.DATABASE_URL) {
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false // <<<<<<<< You might need to adjust this depending on your database setup
+      }
+    }
+  });
+} else {
+  sequelize = require("./config/connection.js");
+}
+
+// Import SequelizeStore and initialize it with sequelize
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
-const sequelize = new Sequelize(process.env.DATABASE_URL);
+const sessionStore = new SequelizeStore({ db: sequelize });
 
 const sess = {
   secret: "Super secret secret",
   cookie: {},
   resave: false,
   saveUninitialized: true,
-  store: new SequelizeStore({
-    db: sequelize
-  })
+  store: sessionStore // Use the initialized session store
 };
 
 app.use(session(sess));
@@ -40,16 +56,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(require('./controllers/'));
 
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}!`);
-  sequelize.sync({ force: false });
-});
-
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
+// Start the server and synchronize sequelize with the database
+sequelize.sync({ force: false }).then(() => {
+  app.listen(PORT, () => {
+    console.log(`App listening on port ${PORT}!`);
   });
+}).catch(err => {
+  console.error('Error synchronizing sequelize:', err);
+});
